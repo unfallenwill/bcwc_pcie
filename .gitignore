@@ -1,0 +1,17 @@
+# 构建产物
+*.o
+*.ko
+*.mod
+*.mod.c
+*.symvers
+*.order
+.*.cmd
+.tmp_versions/
+
+# 生成的审计产物（可由脚本重新生成，但体积大，不入库）
+artifacts/apple-camera-interface
+artifacts/apple-camera-interface.asm
+
+# 本地临时文件
+.firecrawl/
+*.log

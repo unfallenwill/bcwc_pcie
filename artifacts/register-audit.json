@@ -1,0 +1,749 @@
+{
+  "ground_truth": "AppleCameraInterface.kext (macOS 10.12.6)",
+  "apple_offsets": 60,
+  "linux_offsets": 100,
+  "matched": [
+    {
+      "offset": "0x01100",
+      "names": [
+        "S2_DDR_REG_1100"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x01104",
+      "names": [
+        "S2_DDR_REG_1104"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x01108",
+      "names": [
+        "S2_DDR_REG_1108"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x0110c",
+      "names": [
+        "S2_DDR_REG_110C"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x01110",
+      "names": [
+        "S2_DDR_REG_1110"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x01114",
+      "names": [
+        "S2_DDR_REG_1114"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x01118",
+      "names": [
+        "S2_DDR_REG_1118"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x0111c",
+      "names": [
+        "S2_DDR_REG_111C"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x02018",
+      "names": [
+        "S2_DDR_STATUS_2018"
+      ],
+      "apple_uses": 6
+    },
+    {
+      "offset": "0x020b0",
+      "names": [
+        "S2_DDR_20B0"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x0241c",
+      "names": [
+        "S2_DDR_PLL_STATUS_241C"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x02444",
+      "names": [
+        "S2_DDR_PLL_STATUS_2444"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x02810",
+      "names": [
+        "S2_DDR40_PHY_PLL_STATUS"
+      ],
+      "apple_uses": 3
+    },
+    {
+      "offset": "0x0281c",
+      "names": [
+        "S2_DDR40_PHY_PLL_DIV"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x02830",
+      "names": [
+        "S2_DDR40_PHY_VDL_OVR_COARSE"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x02834",
+      "names": [
+        "S2_DDR40_PHY_VDL_OVR_FINE"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x02840",
+      "names": [
+        "S2_DDR40_PHY_DRV_PAD_CTL"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x0284c",
+      "names": [
+        "S2_DDR40_PHY_VDL_STATUS"
+      ],
+      "apple_uses": 6
+    },
+    {
+      "offset": "0x02854",
+      "names": [
+        "S2_DDR40_PHY_VDL_CHAN_STATUS"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x028b0",
+      "names": [
+        "S2_DDR40_STRAP_CTL"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x028b8",
+      "names": [
+        "S2_DDR40_STRAP_STATUS"
+      ],
+      "apple_uses": 2
+    },
+    {
+      "offset": "0x02b60",
+      "names": [
+        "S2_DDR40_WL_RD_DATA_DLY"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x02ba4",
+      "names": [
+        "S2_DDR40_WL_DRV_PAD_CTL"
+      ],
+      "apple_uses": 2
+    },
+    {
+      "offset": "0x02ba8",
+      "names": [
+        "S2_DDR40_WL_CLK_PAD_DISABLE"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x03208",
+      "names": [
+        "S2_3208"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x0d120",
+      "names": [
+        "S2_PCIE_LINK_D120"
+      ],
+      "apple_uses": 2
+    },
+    {
+      "offset": "0x0d124",
+      "names": [
+        "S2_PCIE_LINK_D124"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x0d128",
+      "names": [
+        "S2_PCIE_LINK_D128"
+      ],
+      "apple_uses": 2
+    },
+    {
+      "offset": "0x0d12c",
+      "names": [
+        "S2_PCIE_LINK_D12C"
+      ],
+      "apple_uses": 2
+    },
+    {
+      "offset": "0x40004",
+      "names": [
+        "ISP_REG_40004"
+      ],
+      "apple_uses": 2
+    },
+    {
+      "offset": "0x41000",
+      "names": [
+        "ISP_IRQ_STATUS"
+      ],
+      "apple_uses": 4
+    },
+    {
+      "offset": "0x41004",
+      "names": [
+        "ISP_IRQ_ENABLE"
+      ],
+      "apple_uses": 1
+    },
+    {
+      "offset": "0x41024",
+      "names": [
+        "ISP_IRQ_CLEAR"
+      ],
+      "apple_uses": 2
+    },
+    {
+      "offset": "0xc3000",
+      "names": [
+        "ISP_FW_CHAN_CTRL"
+      ],
+      "apple_uses": 6
+    },
+    {
+      "offset": "0xc3004",
+      "names": [
+        "ISP_FW_QUEUE_CTRL"
+      ],
+      "apple_uses": 4
+    },
+    {
+      "offset": "0xc3008",
+      "names": [
+        "ISP_FW_SIZE"
+      ],
+      "apple_uses": 3
+    },
+    {
+      "offset": "0xc300c",
+      "names": [
+        "ISP_FW_HEAP_SIZE"
+      ],
+      "apple_uses": 4
+    },
+    {
+      "offset": "0xc3010",
+      "names": [
+        "ISP_FW_HEAP_ADDR"
+      ],
+      "apple_uses": 3
+    },
+    {
+      "offset": "0xc3014",
+      "names": [
+        "ISP_FW_HEAP_SIZE2"
+      ],
+      "apple_uses": 3
+    },
+    {
+      "offset": "0xc3018",
+      "names": [
+        "ISP_REG_C3018"
+      ],
+      "apple_uses": 2
+    },
+    {
+      "offset": "0xc301c",
+      "names": [
+        "ISP_REG_C301C"
+      ],
+      "apple_uses": 2
+    }
+  ],
+  "only_apple": [
+    {
+      "offset": "0x01040",
+      "uses": 1,
+      "functions": []
+    },
+    {
+      "offset": "0x42000",
+      "uses": 2,
+      "functions": []
+    },
+    {
+      "offset": "0x42008",
+      "uses": 2,
+      "functions": []
+    },
+    {
+      "offset": "0x90068",
+      "uses": 1,
+      "functions": []
+    },
+    {
+      "offset": "0xc0000",
+      "uses": 1,
+      "functions": []
+    },
+    {
+      "offset": "0xc0004",
+      "uses": 1,
+      "functions": []
+    },
+    {
+      "offset": "0xc0008",
+      "uses": 2,
+      "functions": []
+    },
+    {
+      "offset": "0xc000c",
+      "uses": 2,
+      "functions": []
+    },
+    {
+      "offset": "0xc0010",
+      "uses": 2,
+      "functions": []
+    },
+    {
+      "offset": "0xc0014",
+      "uses": 1,
+      "functions": []
+    },
+    {
+      "offset": "0xc0018",
+      "uses": 1,
+      "functions": []
+    },
+    {
+      "offset": "0xc001c",
+      "uses": 1,
+      "functions": []
+    },
+    {
+      "offset": "0xc0020",
+      "uses": 1,
+      "functions": []
+    },
+    {
+      "offset": "0xc0024",
+      "uses": 1,
+      "functions": []
+    },
+    {
+      "offset": "0xc1004",
+      "uses": 1,
+      "functions": []
+    },
+    {
+      "offset": "0xc100c",
+      "uses": 1,
+      "functions": []
+    },
+    {
+      "offset": "0xc1014",
+      "uses": 1,
+      "functions": []
+    },
+    {
+      "offset": "0xc101c",
+      "uses": 1,
+      "functions": []
+    },
+    {
+      "offset": "0xc1024",
+      "uses": 1,
+      "functions": []
+    }
+  ],
+  "only_linux": [
+    {
+      "offset": "0x00004",
+      "names": [
+        "S2_PLL_REFCLK"
+      ]
+    },
+    {
+      "offset": "0x0000c",
+      "names": [
+        "S2_PLL_CMU_STATUS"
+      ]
+    },
+    {
+      "offset": "0x00014",
+      "names": [
+        "S2_PLL_CTRL_14"
+      ]
+    },
+    {
+      "offset": "0x00020",
+      "names": [
+        "S2_PLL_CTRL_20"
+      ]
+    },
+    {
+      "offset": "0x00024",
+      "names": [
+        "S2_PLL_CTRL_24"
+      ]
+    },
+    {
+      "offset": "0x0002c",
+      "names": [
+        "S2_PLL_CTRL_2C"
+      ]
+    },
+    {
+      "offset": "0x0009c",
+      "names": [
+        "S2_PLL_CTRL_9C"
+      ]
+    },
+    {
+      "offset": "0x000a0",
+      "names": [
+        "S2_DDR40_BYTE_LANE_SIZE"
+      ]
+    },
+    {
+      "offset": "0x000a8",
+      "names": [
+        "S2_PLL_STATUS_A8"
+      ]
+    },
+    {
+      "offset": "0x00100",
+      "names": [
+        "S2_PLL_CTRL_100"
+      ]
+    },
+    {
+      "offset": "0x00128",
+      "names": [
+        "ISP_FW_CHAN_START"
+      ]
+    },
+    {
+      "offset": "0x00220",
+      "names": [
+        "ISP_FW_CHAN_END"
+      ]
+    },
+    {
+      "offset": "0x00510",
+      "names": [
+        "S2_PLL_CTRL_510"
+      ]
+    },
+    {
+      "offset": "0x00ffc",
+      "names": [
+        "S2_DDR40_PHY_VDL_STEP_MASK"
+      ]
+    },
+    {
+      "offset": "0x02004",
+      "names": [
+        "S2_DDR_2004"
+      ]
+    },
+    {
+      "offset": "0x02008",
+      "names": [
+        "S2_DDR_2008"
+      ]
+    },
+    {
+      "offset": "0x02014",
+      "names": [
+        "S2_DDR_2014"
+      ]
+    },
+    {
+      "offset": "0x020a0",
+      "names": [
+        "S2_DDR_20A0"
+      ]
+    },
+    {
+      "offset": "0x020a4",
+      "names": [
+        "S2_DDR_20A4"
+      ]
+    },
+    {
+      "offset": "0x020a8",
+      "names": [
+        "S2_DDR_20A8"
+      ]
+    },
+    {
+      "offset": "0x020f8",
+      "names": [
+        "S2_20F8"
+      ]
+    },
+    {
+      "offset": "0x02118",
+      "names": [
+        "S2_DDR_2118"
+      ]
+    },
+    {
+      "offset": "0x02424",
+      "names": [
+        "S2_2424"
+      ]
+    },
+    {
+      "offset": "0x02430",
+      "names": [
+        "S2_2430"
+      ]
+    },
+    {
+      "offset": "0x02434",
+      "names": [
+        "S2_2434"
+      ]
+    },
+    {
+      "offset": "0x02438",
+      "names": [
+        "S2_2438"
+      ]
+    },
+    {
+      "offset": "0x02800",
+      "names": [
+        "DDR_PHY_REG_BASE"
+      ]
+    },
+    {
+      "offset": "0x02814",
+      "names": [
+        "S2_DDR40_PHY_PLL_CFG"
+      ]
+    },
+    {
+      "offset": "0x02820",
+      "names": [
+        "S2_DDR40_PHY_AUX_CTL"
+      ]
+    },
+    {
+      "offset": "0x0283c",
+      "names": [
+        "S2_DDR40_PHY_ZQ_PVT_COMP_CTL"
+      ]
+    },
+    {
+      "offset": "0x02848",
+      "names": [
+        "S2_DDR40_PHY_VDL_CTL"
+      ]
+    },
+    {
+      "offset": "0x02850",
+      "names": [
+        "S2_DDR40_PHY_DQ_CALIB_STATUS"
+      ]
+    },
+    {
+      "offset": "0x0285c",
+      "names": [
+        "S2_DDR40_PHY_VTT_CTL"
+      ]
+    },
+    {
+      "offset": "0x02860",
+      "names": [
+        "S2_DDR40_PHY_VTT_STATUS"
+      ]
+    },
+    {
+      "offset": "0x02864",
+      "names": [
+        "S2_DDR40_PHY_VTT_CONNECTIONS"
+      ]
+    },
+    {
+      "offset": "0x02868",
+      "names": [
+        "S2_DDR40_PHY_VTT_OVERRIDE"
+      ]
+    },
+    {
+      "offset": "0x028b4",
+      "names": [
+        "S2_DDR40_STRAP_CTL_2"
+      ]
+    },
+    {
+      "offset": "0x02a00",
+      "names": [
+        "S2_DDR40_RDEN_BYTE"
+      ]
+    },
+    {
+      "offset": "0x02a08",
+      "names": [
+        "S2_DDR40_2A08"
+      ]
+    },
+    {
+      "offset": "0x02a0c",
+      "names": [
+        "S2_DDR40_2A0C"
+      ]
+    },
+    {
+      "offset": "0x02a10",
+      "names": [
+        "S2_DDR40_2A10"
+      ]
+    },
+    {
+      "offset": "0x02a34",
+      "names": [
+        "S2_DDR40_2A34"
+      ]
+    },
+    {
+      "offset": "0x02a38",
+      "names": [
+        "S2_DDR40_2A38"
+      ]
+    },
+    {
+      "offset": "0x02a74",
+      "names": [
+        "S2_DDR40_RDEN_BYTE0"
+      ]
+    },
+    {
+      "offset": "0x02aa8",
+      "names": [
+        "S2_DDR40_2AA8"
+      ]
+    },
+    {
+      "offset": "0x02aac",
+      "names": [
+        "S2_DDR40_2AAC"
+      ]
+    },
+    {
+      "offset": "0x02b14",
+      "names": [
+        "S2_DDR40_RDEN_BYTE1"
+      ]
+    },
+    {
+      "offset": "0x02b64",
+      "names": [
+        "S2_DDR40_WL_READ_CTL"
+      ]
+    },
+    {
+      "offset": "0x02b90",
+      "names": [
+        "S2_DDR40_WL_READ_FIFO_STATUS"
+      ]
+    },
+    {
+      "offset": "0x02b94",
+      "names": [
+        "S2_DDR40_WL_READ_FIFO_CLEAR"
+      ]
+    },
+    {
+      "offset": "0x02ba0",
+      "names": [
+        "S2_DDR40_WL_IDLE_PAD_CTL"
+      ]
+    },
+    {
+      "offset": "0x02bac",
+      "names": [
+        "S2_DDR40_WL_WR_PREAMBLE_MODE"
+      ]
+    },
+    {
+      "offset": "0x03200",
+      "names": [
+        "S2_3200"
+      ]
+    },
+    {
+      "offset": "0x03204",
+      "names": [
+        "S2_3204"
+      ]
+    },
+    {
+      "offset": "0x0d000",
+      "names": [
+        "S2_PCIE_LINK_D000"
+      ]
+    },
+    {
+      "offset": "0x0d104",
+      "names": [
+        "S2_D104"
+      ]
+    },
+    {
+      "offset": "0x0d108",
+      "names": [
+        "S2_D108"
+      ]
+    },
+    {
+      "offset": "0x40008",
+      "names": [
+        "ISP_REG_40008"
+      ]
+    },
+    {
+      "offset": "0x41020",
+      "names": [
+        "ISP_REG_41020"
+      ]
+    }
+  ],
+  "apple_access_total": 106,
+  "coverage_pct": 77.36
+}
