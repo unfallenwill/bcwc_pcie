@@ -101,13 +101,27 @@ else
 fi
 
 echo
-echo "--- 6. 内核日志中的错误 ---"
-ERRS=$(dmesg 2>/dev/null | grep -i facetime | grep -icE 'error|fail|timeout|invalid|warn')
-if [ "${ERRS:-0}" -eq 0 ]; then
-	ok "无错误"
+echo "--- 6. 内核日志中的错误（仅本次模块加载之后）---"
+# dmesg 缓冲区里可能有上一次会话的残留（例如调试时故意抽走固件产生的日志），
+# 只看本次模块加载之后的记录。
+SINCE=$(dmesg 2>/dev/null | grep -oE '^\[ *[0-9]+\.[0-9]+\] facetimehd .*Found FaceTime HD camera' \
+	| grep -oE '^\[ *[0-9]+\.[0-9]+\]' | tr -d '[] ' | sort -g | tail -1)
+if [ -z "$SINCE" ]; then
+	echo "  [--] 找不到本次加载的起点，跳过检查"
 else
-	bad "发现 $ERRS 行错误/警告"
-	dmesg | grep -i facetime | grep -iE 'error|fail|timeout|invalid|warn' | tail -10 | sed 's/^/       /'
+	ERRS=$(dmesg 2>/dev/null | awk -v s="$SINCE" '
+		/^\[ *[0-9]+\.[0-9]+\]/ {
+			t = $1; gsub(/[\[\]]/, "", t);
+			if (t + 0 < s + 0) next
+		}
+		/facetime/ { print }
+	' | grep -icE 'error|fail|timeout|invalid|warn')
+	if [ "${ERRS:-0}" -eq 0 ]; then
+		ok "自加载 (t=${SINCE}s) 之后无错误"
+	else
+		bad "发现 $ERRS 行错误/警告"
+		dmesg | grep -i facetime | grep -iE 'error|fail|timeout|invalid|warn' | tail -10 | sed 's/^/       /'
+	fi
 fi
 
 echo
