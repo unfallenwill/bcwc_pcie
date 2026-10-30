@@ -20,3 +20,6 @@ artifacts/*.png
 # 本地临时文件
 .firecrawl/
 *.log
+
+# Apple 专有固件二进制 —— 不入库，由 tools/fetch-firmware.sh 获取
+firmware/

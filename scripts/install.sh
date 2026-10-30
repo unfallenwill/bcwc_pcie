@@ -24,6 +24,24 @@ fi
 # ---------------------------------------------------------------- 固件 --
 FWDIR="/usr/lib/firmware/facetimehd"
 [[ -d /usr/lib/firmware ]] || FWDIR="/lib/firmware/facetimehd"
+FWSRC="${HERE}/firmware"
+
+# 固件来源优先级:
+#   1) 仓库内的 firmware/ 目录（离线包，自己打包的）
+#   2) 系统里已安装的
+#   3) 从 Apple 官方更新包抓取（需要网络，约 18MB）
+if [[ -f "${FWSRC}/firmware.bin" ]]; then
+	echo "==> 使用仓库内的固件: ${FWSRC}"
+elif [[ -f "${FWDIR}/firmware.bin" ]]; then
+	echo "==> 系统已安装固件: ${FWDIR}"
+	FWSRC="${FWDIR}"
+else
+	echo "==> 本地没有固件，从 Apple 官方更新包获取（约 18MB，需要网络）"
+	command -v curl >/dev/null || { echo "需要 curl" >&2; exit 1; }
+	command -v xz   >/dev/null || { echo "需要 xz-utils" >&2; exit 1; }
+	"${HERE}/tools/fetch-firmware.sh" --dest "${FWSRC}"
+	FWSRC="${FWSRC}"
+fi
 
 echo "==> 安装固件到 ${FWDIR}"
 mkdir -p "$FWDIR"

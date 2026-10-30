@@ -43,8 +43,8 @@
 **本仓库在此之上做的改动：**
 
 - 重写为 `tools/fetch-firmware.sh`，补充中文注释与参数
-- 固件提取物**入库**到 `firmware/`，使安装完全离线可复现
-- 保留上游的全部 sha256 硬校验
+- 保留上游的全部 sha256 硬校验，并给出每个文件的实测必要性结论
+- **Apple 专有二进制不入库**，由使用者本机现取，仓库不含任何 Apple 文件
 
 ## 打包安装脚本
 
@@ -57,7 +57,7 @@
 **本仓库在此之上做的改动：**
 
 - 重写为 `scripts/install.sh` + `scripts/build.sh` + `scripts/verify.sh`
-- 改为从本仓库 `firmware/` 安装（不再依赖运行时下载）
+- 改为不再从本仓库取固件，而是缺失时自动调用 `tools/fetch-firmware.sh`
 
 ---
 
@@ -67,6 +67,6 @@
 `AppleCameraInterface.kext`。它是 **Apple 的专有作品**，版权归 Apple 所有，
 在本仓库中仅作为**交叉审计的 ground truth** 使用。
 
-同样的提取产物被放在 `firmware/firmware.bin`（ISP 固件）与
-`firmware/*_01XX.dat`（传感器标定）——这些文件是加载驱动所必需的，
-版权归 Apple，仅供本机硬件使用。
+同样的提取产物是 `firmware.bin`（ISP 固件）与 11 个 `*_01XX.dat`（传感器标定）。
+这些文件**不在本仓库中**——版权归 Apple，只在使用者本机从 Apple CDN 提取，
+仅供对应硬件使用。仓库里只提供提取工具与校验值。

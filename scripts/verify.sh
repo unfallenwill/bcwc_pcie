@@ -22,6 +22,19 @@ echo "========================================================"
 echo " 1. 固件完整性校验 (sha256)"
 echo "========================================================"
 
+# 固件可能来自仓库内的 firmware/ 或已安装的 /usr/lib/firmware/facetimehd
+FWCHECK=""
+for cand in "${HERE}/firmware" "/usr/lib/firmware/facetimehd" "/lib/firmware/facetimehd"; do
+	[[ -f "${cand}/firmware.bin" ]] && { FWCHECK="$cand"; break; }
+done
+if [[ -z "$FWCHECK" ]]; then
+	bad "找不到固件（仓库 firmware/ 或 /usr/lib/firmware/facetimehd）"
+	bad "先运行: ./tools/fetch-firmware.sh --dest ${HERE}/firmware"
+	FWCHECK="${HERE}/firmware"
+else
+	echo "  校验目录: ${FWCHECK}"
+fi
+
 declare -A HASHES=(
 	[firmware.bin]="240ef2e991f1d089d8228ce11d92b66bfa4b3d7289ec4fee228b64a713024330"
 	[9112_01XX.dat]="4dd756fa8460d8dc3d78d0d76944b2f92275d1fe9c83181bbc8292c81c005f1a"
@@ -38,15 +51,15 @@ declare -A HASHES=(
 )
 
 for f in "${!HASHES[@]}"; do
-	if [[ ! -f "firmware/$f" ]]; then
-		bad "firmware/$f 不存在"
+	if [[ ! -f "${FWCHECK}/${f}" ]]; then
+		bad "${FWCHECK}/${f} 不存在"
 		continue
 	fi
-	got="$(sha256sum "firmware/$f" | awk '{print $1}')"
+	got="$(sha256sum "${FWCHECK}/${f}" | awk '{print $1}')"
 	if [[ "$got" == "${HASHES[$f]}" ]]; then
-		ok "firmware/$f"
+		ok "${f}"
 	else
-		bad "firmware/$f  sha256 不符"
+		bad "${f}  sha256 不符"
 	fi
 done
 

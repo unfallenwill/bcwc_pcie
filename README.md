@@ -126,7 +126,8 @@ $ sudo ./scripts/selftest.sh
 # 1. 只编译（不需要 root）
 ./scripts/build.sh
 
-# 2. 安装（需要 root：装固件 + DKMS 注册模块 + 加载 + 开机自启）
+# 2. 安装（需要 root）
+#    固件不在仓库里 —— 若本地没有，install.sh 会自动从 Apple 官方更新包获取
 sudo ./scripts/install.sh
 
 # 3. 校验固件与寄存器表（不需要 root，随时可跑）
@@ -134,6 +135,12 @@ sudo ./scripts/install.sh
 
 # 4. 运行时自检（需要 root，会真的抓一帧并检查画面内容）
 sudo ./scripts/selftest.sh
+```
+
+想提前把固件抓好（可离线安装）：
+
+```bash
+./tools/fetch-firmware.sh --dest firmware    # 约 18MB，12 个文件全部 sha256 校验
 ```
 
 装好后 `/dev/video0` 会出现，用任意 V4L2 应用打开即可：
@@ -152,13 +159,49 @@ v4l2-ctl -d /dev/video0 --stream-mmap=4 --stream-count=60 --stream-to=/dev/null
 
 ---
 
+## 固件从哪来
+
+摄像头没有自带可引导的固件——ISP 固件必须由驱动在加载时从外部灌入。
+它藏在 Apple 的 `AppleCameraInterface.kext` 里，而那个 kext 在 1.9GB 的
+macOS 更新镜像中。
+
+本仓库**不分发**这些 Apple 专有二进制，而是提供提取工具：
+
+```bash
+./tools/fetch-firmware.sh --dest firmware
+```
+
+它用 HTTP Range 只取回需要的字节区间（**约 18MB**，不是 1.9GB），
+逐个文件用固定的 sha256 校验，任何一个字节对不上就中止。
+
+### 12 个文件里哪些是必须的
+
+实测（把文件移走、重新加载模块、对比出图与颜色）：
+
+| 文件 | 数量 | 缺失后果 |
+|---|---|---|
+| `firmware.bin` | 1 | **致命** —— `probe with driver facetimehd failed with error -2`，一帧都出不来 |
+| `*_01XX.dat` | 11 | **可选** —— 仍能正常出图，只是少了传感器标定，颜色偏灰 |
+
+实测数据（同一场景对比）：
+
+| 配置 | 平均 RGB | 平均饱和度 | 灰度动态范围 |
+|---|---|---|---|
+| 全齐（12 个） | (100, 84, 79) | **0.413** | 252 |
+| 只有 `firmware.bin` | (74, 76, 74) | 0.324 | 214 |
+| 没有 `firmware.bin` | — | **采集失败** | — |
+
+即：11 个标定文件缺失时饱和度下降约 22%，画面偏灰但完全可用。
+所以**追求画质就装全 12 个**，只求能用则 `firmware.bin` 即可。
+
+---
+
 ## 仓库结构
 
 ```
 kernel/facetimehd/     内核模块源码（out-of-tree，GPLv2）
-firmware/              已校验的固件与传感器标定文件（12 个）
 tools/
-  fetch-firmware.sh    从 Apple CDN 重新抓取并校验固件
+  fetch-firmware.sh    从 Apple CDN 抓取并校验固件（不入库，需要时现取）
   audit-registers.py   用 Apple kext 审计驱动寄存器表
   trace-offsets.py     把寄存器访问定位到具体函数
 scripts/
@@ -170,6 +213,7 @@ docs/
   reverse-engineering.md   逆向笔记：Apple 驱动 ↔ Linux 驱动的对照
   hardware.md              硬件识别与已知机型
 artifacts/             审计产物（Apple kext 反汇编、JSON 报告）
+firmware/              【不入库】固件缓存目录，由 fetch-firmware.sh 填充
 ```
 
 ---
@@ -196,7 +240,7 @@ I2C 传感器配置——这是**以月计**的工作量，不是能"今天"做�
 2. **新内核适配** — 上游驱动写于 4.x/5.x，本机是 7.0.0-38（2026 年）。
    已验证零警告编译通过。
 3. **固件供应链** — 自己重写提取工具，用 HTTP Range 只取 ~18MB 而不是 1.9GB
-   镜像，全部 sha256 硬校验，产物入库可离线安装。
+   镜像，全部 sha256 硬校验。**Apple 专有二进制不入库**，由安装时现取。
 
 详见 [`docs/reverse-engineering.md`](docs/reverse-engineering.md)。
 
@@ -206,6 +250,8 @@ I2C 传感器配置——这是**以月计**的工作量，不是能"今天"做�
 
 - `kernel/facetimehd/` — GPLv2，版权归 Patrik Jakobsson，保留原始 `LICENSE`。
   本仓库的修改同样以 GPLv2 发布。
-- `firmware/` — 从 Apple 官方 macOS 更新包中提取的二进制，版权归 Apple，
-  仅供本机硬件使用。
 - `tools/` `scripts/` `docs/` — GPL-2.0-only。
+- **固件** — 从 Apple 官方 macOS 更新包中提取的二进制（`firmware.bin` 与 11 个
+  传感器标定文件），版权归 Apple。**本仓库不分发这些文件**，
+  由 `tools/fetch-firmware.sh` 在使用者本机从 Apple CDN 提取，
+  仅供对应硬件使用。
