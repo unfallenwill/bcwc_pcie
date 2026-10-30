@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 #
-# shexiangtou — MacBook Pro FaceTime HD 摄像头驱动
+# bcwc_pcie — Broadcom FaceTime HD 摄像头 (PCI 14e4:1570) 的 Linux 驱动
 #
 
 KVER    ?= $(shell uname -r)

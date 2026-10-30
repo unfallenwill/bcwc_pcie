@@ -12,6 +12,11 @@
 artifacts/apple-camera-interface
 artifacts/apple-camera-interface.asm
 
+# 摄像头实拍样帧 —— 属于隐私内容，不入库
+artifacts/sample-frame.*
+artifacts/*.jpg
+artifacts/*.png
+
 # 本地临时文件
 .firecrawl/
 *.log

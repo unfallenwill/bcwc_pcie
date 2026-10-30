@@ -1,9 +1,83 @@
-# shexiangtou — MacBook Pro 摄像头驱动 (Broadcom FaceTime HD)
+# bcwc_pcie
+
+**Broadcom FaceTime HD 摄像头（PCI `14e4:1570`）的 Linux 驱动。**
 
 给 **2013 年中款 MacBook Pro (Retina, 13"/15")** 在 Linux 上装上摄像头。
 
 这块摄像头是 **Broadcom FaceTime HD (PCI `14e4:1570`)**，走 **PCIe** 而不是 USB，
 所以 Linux 内核自带的 `uvcvideo` 完全用不上——上游内核里**没有任何**能驱动它的代码。
+
+---
+
+## 为什么叫 `bcwc_pcie`
+
+沿用 Linux 摄像头驱动的传统命名 `<芯片代号>_<总线>`：
+
+| 驱动名 | 含义 | 总线 |
+|---|---|---|
+| `bdc_pci` | Broadcom Digital Camera（上一代 Broadcom 摄像头，Linux 5.12 移除） | PCI |
+| `uvcvideo` | USB Video Class 通用驱动 | USB |
+| `cx88` / `saa7134` / `tw6864` | 各家芯片族 + 型号 | PCI |
+| **`bcwc_pcie`** | **Broadcom 1570 FaceTime HD Camera** | **PCIe** |
+
+- **BCWC** —— 这颗 Broadcom 摄像头芯片的代号。Apple 自己的内核扩展
+  `AppleCameraInterface.kext` 里管它叫 **"S2 Chip"**
+  （`AppleCamIn::EnableS2Chip` / `DisableS2Chip` / `acpiControlS2ChipPower`），
+  驱动源码里则用 `S2_*` 前缀标识它的寄存器域。
+- **pcie** —— 关键区分点：同样的 Broadcom 摄像头在老 Mac 上是 USB（走 `uvcvideo`），
+  或者是上一代的 `bdc_pci`；只有 2011 年后的这批是 **PCIe** 且需要私有 ISP 协议。
+
+上游 Linux 社区最早用的就是这个���称（`patjak/bcwc_pcie`，2014），
+2015 年才为可搜索性改叫 `facetimehd`。本仓库沿用代号名，
+但 **README 标题、模块名、GitHub topics 里都保留 "FaceTime HD" 关键词**，
+两边的可搜索性都不丢。
+
+> 内核模块名保持上游的 **`facetimehd`** 不变——改它会偏离上游、影响 DKMS 与
+> udev 集成。`bcwc_pcie` 是仓库与项目的名字。
+
+---
+
+## 适用范围
+
+### 硬件
+
+| 项 | 值 |
+|---|---|
+| PCI ID | `14e4:1570` |
+| 厂商 | Broadcom Inc. and subsidiaries |
+| 设备名 | 720p FaceTime HD Camera |
+| 接口 | **PCIe**（不是 USB） |
+| 内核模块 | `facetimehd` |
+
+### 怎么确认你的 Mac 适用
+
+```bash
+lspci -nn | grep 14e4:1570
+```
+
+有输出 = 适用。典型输出：
+
+```
+02:00.0 Multimedia controller [0480]: Broadcom Inc. and subsidiaries 720p FaceTime HD Camera [14e4:1570]
+```
+
+**没有输出 = 不适用**（要么是 USB 摄像头，要么是别的型号）。
+
+### 支持的机型
+
+| 机型 | 年份 |
+|---|---|
+| MacBook Pro 13" / 15" / 17" | 2011 年起 |
+| MacBook Air 11" / 13" | 2011 年起（13" Air 2013 起换用此芯片） |
+| iMac 21.5" / 27" | 2011 年中起 |
+| Thunderbolt Display | — |
+| 12 英寸 MacBook (8,1 / 9,1 / 10,1) | 2015–2017（需固件 5.60.0 + `1675_01XX.dat`） |
+
+### 不适用的情形
+
+- **USB 接口的 FaceTime 摄像头**（老款 iSight）——内核自带 `uvcvideo` 即可
+- **上一代 Broadcom 摄像头**——老内核里的 `bdc_pci`（Linux 5.12 已移除）
+- 非 Mac 平台的 BCWC 硬件——本驱动只针对 Apple 的固件与传感器标定
 
 ---
 
