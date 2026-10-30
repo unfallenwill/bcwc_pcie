@@ -2,32 +2,37 @@
 #
 # SPDX-License-Identifier: GPL-2.0-only
 #
-# fetch-firmware.sh — 下载并提取 Broadcom FaceTime HD (PCI 14e4:1570) 摄像头固件
+# fetch-firmware.sh — 获取 Broadcom FaceTime HD (PCI 14e4:1570) 摄像头固件
 #
-# 原理:
-#   1. 摄像头 ISP 固件与传感器标定(set)文件都打包在 Apple 的
-#      AppleCameraInterface.kext / AppleCameraAssistant.kext 里。
-#   2. 这两个 kext 位于 macOS 安装镜像的 pbzx 分块中，每个分块本身是一个
-#      完整的 xz 流，所以可以用 HTTP Range 只取回需要的字节区间，
-#      无需下载 1.9GB 的完整镜像(实测约 18MB)。
-#   3. 提取物全部用固定 sha256 校验，校验失败即中止。
+# 三条路径:
+#
+#   1) 默认: 从 Apple CDN 抓
+#      摄像头没有自带可引导固件，ISP 固件藏在 Apple 的
+#      AppleCameraInterface.kext 里，而那个 kext 在 1.9GB 的 macOS 镜像中。
+#      本路径用 HTTP Range 只取需要的字节区间(约 18MB)，
+#      全部 sha256 硬校验。
+#
+#   2) --from-kext FILE [--assistant FILE]
+#      从本地已有的 kext 按**内容**提取 (不依赖偏移，不依赖 CDN)。
+#      这是 CDN 失效时的主要恢复手段，见 docs/archive-and-recovery.md
+#
+#   3) --from-dmg FILE
+#      从本地 macOS 安装介质提取 (需要 7z)，再走路径 2
 #
 # 用法:
-#   ./fetch-firmware.sh --dest <dir>          # 只提取到 <dir>，不安装
-#   sudo ./fetch-firmware.sh --dest <dir> --install
-#
-# 选项:
-#   --dest DIR     产物输出目录 (默认 /usr/lib/firmware/facetimehd)
-#   --install      安装到固件目录并设置权限 (需要 root)
-#   --keep         保留中间文件，便于调试
+#   ./fetch-firmware.sh --dest <dir>
+#   ./fetch-firmware.sh --dest <dir> --from-kext AppleCameraInterface [AppleCameraAssistant]
+#   ./fetch-firmware.sh --dest <dir> --from-dmg macOSUpdCombo10.12.6.dmg
 #
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# 固定常量（来源: patjak/facetimehd-firmware, 偏移量针对 Apple CDN 上
-# 字节一致的 macOSUpdCombo10.12.6.dmg）
+# 固定常量（来源: patjak/facetimehd-firmware）
+# 固件与标定文件的 sha256 全部硬编码；提取时用内容寻址工具复核
 # ---------------------------------------------------------------------------
-URL_COMBO="https://updates.cdn-apple.com/2019/cert/041-90765-20191011-837e856d-b522-4865-b64c-641048ed77c4/macOSUpdCombo10.12.6.dmg"
+URLS=(
+	"https://updates.cdn-apple.com/2019/cert/041-90765-20191011-837e856d-b522-4865-b64c-641048ed77c4/macOSUpdCombo10.12.6.dmg"
+)
 
 # AppleCameraInterface 跨两个分块
 DRV_RANGE1="699186570-703316225"
@@ -65,13 +70,21 @@ SETFILES='
 DEST="/usr/lib/firmware/facetimehd"
 DO_INSTALL=0
 KEEP=0
+FROM_KEXT=""
+FROM_ASSISTANT=""
+FROM_DMG=""
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
-		--dest)    DEST="$2"; shift 2 ;;
-		--install) DO_INSTALL=1; shift ;;
-		--keep)    KEEP=1; shift ;;
-		-h|--help) sed -n '2,30p' "$0"; exit 0 ;;
+		--dest)        DEST="$2"; shift 2 ;;
+		--install)     DO_INSTALL=1; shift ;;
+		--keep)        KEEP=1; shift ;;
+		--from-kext)   FROM_KEXT="$(readlink -f "$2")"; shift 2 ;;
+		--assistant)   FROM_ASSISTANT="$(readlink -f "$2")"; shift 2 ;;
+		--from-dmg)    FROM_DMG="$(readlink -f "$2")"; shift 2 ;;
+		-h|--help)     sed -n '2,30p' "$0"; exit 0 ;;
 		*) echo "未知参数: $1" >&2; exit 1 ;;
 	esac
 done
@@ -92,12 +105,85 @@ verify() { # verify <file> <sha256>
 	fi
 }
 
-fetch_chunk() { # fetch_chunk <range> <outfile>
-	curl -fsSL --retry 3 --retry-delay 2 -r "$1" "$URL_COMBO" | xzcat -q 2>/dev/null > "$2"
-}
-
 slice() { # slice <infile> <offset> <size> > stdout
 	head -c "$(($2 + $3))" "$1" | tail -c "$3"
+}
+
+# ===========================================================================
+# 路径 2/3: 从本地 kext 按内容提取（不依赖 CDN，不依赖偏移）
+# ===========================================================================
+if [[ -n "$FROM_DMG" ]]; then
+	echo "==> 从 macOS 安装介质提取 kext: ${FROM_DMG}"
+	command -v 7z >/dev/null || { echo "需要 7z (p7zip-full)" >&2; exit 1; }
+	[[ -f "$FROM_DMG" ]] || { echo "找不到 ${FROM_DMG}" >&2; exit 1; }
+
+	mkdir -p dmg && cd dmg
+	7z x -y "$FROM_DMG" >/dev/null 2>&1 || true
+	# 在解出的目录里找两个 kext 的可执行文件
+	IFACE="$(find . -path '*AppleCameraInterface.kext/Contents/MacOS/AppleCameraInterface' -type f | head -1)"
+	ASST="$(find . -path '*AppleCameraAssistant.kext/Contents/MacOS/AppleCameraAssistant' -type f | head -1)"
+	cd ..
+	if [[ -z "$IFACE" ]]; then
+		echo "在 ${FROM_DMG} 里没找到 AppleCameraInterface.kext" >&2
+		echo "该介质可能不含摄像头驱动（太老或太新）" >&2
+		exit 1
+	fi
+	FROM_KEXT="$WORKDIR/dmg/${IFACE#./}"
+	[[ -n "$ASST" ]] && FROM_ASSISTANT="$WORKDIR/dmg/${ASST#./}"
+	echo "    找到 AppleCameraInterface"
+fi
+
+if [[ -n "$FROM_KEXT" ]]; then
+	[[ -f "$FROM_KEXT" ]] || { echo "找不到 ${FROM_KEXT}" >&2; exit 1; }
+
+	echo "==> 内容寻址提取 ISP 固件"
+	python3 "${HERE}/extract-firmware.py" firmware "$FROM_KEXT" "$WORKDIR"
+
+	echo "==> 内容寻址提取传感器标定文件"
+	if [[ -n "$FROM_ASSISTANT" ]]; then
+		python3 "${HERE}/extract-firmware.py" setfiles "$FROM_ASSISTANT" "$WORKDIR"
+	else
+		echo "    未提供 AppleCameraAssistant —— 跳过标定文件（不影响出图，颜色会偏灰）"
+	fi
+
+	DEST="$(readlink -m "$DEST")"
+	mkdir -p "$DEST"
+	install -m644 firmware.bin "$DEST/"
+	shopt -s nullglob
+	for f in ./*_01XX.dat; do install -m644 "$f" "$DEST/"; done
+	shopt -u nullglob
+	echo "==> 固件已就位: $DEST"
+	ls -l "$DEST"
+	exit 0
+fi
+
+# ===========================================================================
+# 路径 1: 从 Apple CDN 抓
+# ===========================================================================
+URL_COMBO="${URLS[0]}"
+DL_OK=0
+for u in "${URLS[@]}"; do
+	echo "==> 尝试 Apple CDN: ${u}"
+	if curl -fsSL --retry 2 --retry-delay 2 -r 1-1024 "$u" -o /dev/null 2>/dev/null; then
+		URL_COMBO="$u"
+		DL_OK=1
+		break
+	fi
+done
+if [[ $DL_OK -eq 0 ]]; then
+	echo >&2
+	echo "Apple CDN 全部不可用。这不是死路 —— 请改用本地来源:" >&2
+	echo "  1) 从任意 macOS 安装介质提取 kext 后用:" >&2
+	echo "     ./fetch-firmware.sh --dest DIR --from-kext <AppleCameraInterface>" >&2
+	echo "  2) 或直接用本地 DMG:" >&2
+	echo "     ./fetch-firmware.sh --dest DIR --from-dmg <macOSUpdCombo.dmg>" >&2
+	echo >&2
+	echo "详见 docs/archive-and-recovery.md" >&2
+	exit 1
+fi
+
+fetch_chunk() { # fetch_chunk <range> <outfile>
+	curl -fsSL --retry 3 --retry-delay 2 -r "$1" "$URL_COMBO" | xzcat -q 2>/dev/null > "$2"
 }
 
 echo "==> 下载 AppleCameraInterface（分块 1/2）"
@@ -140,6 +226,5 @@ echo "==> 固件已就位: $DEST"
 ls -l "$DEST"
 
 if [[ $DO_INSTALL -eq 1 ]]; then
-	# 驱动请求的固件名带 .dat 后缀，实际文件名需与 module 声明一致
 	echo "==> 安装完成，重启或重新加载 facetimehd 模块后生效"
 fi

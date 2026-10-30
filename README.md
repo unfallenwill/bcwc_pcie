@@ -174,6 +174,29 @@ macOS 更新镜像中。
 它用 HTTP Range 只取回需要的字节区间（**约 18MB**，不是 1.9GB），
 逐个文件用固定的 sha256 校验，任何一个字节对不上就中止。
 
+### 如果 Apple 关掉 CDN
+
+**东西不会失传。** 提取工具还有两条不依赖 CDN 的路径：
+
+```bash
+# 路径 2：从本地已有的 kext 按内容提取（不认偏移，只认哈希）
+./tools/fetch-firmware.sh --dest firmware \
+    --from-kext  <AppleCameraInterface> \
+    --assistant  <AppleCameraAssistant>
+
+# 路径 3：从本地 macOS 安装介质提取（需要 7z），再自动走路径 2
+./tools/fetch-firmware.sh --dest firmware --from-dmg macOSUpdCombo10.12.6.dmg
+```
+
+路径 2 的原理是**内容寻址**：扫描 kext 里所有 gzip 流逐个解压认版本；
+标定文件的头 2 字节（大端）就是传感器号，据此定位。完全不依赖字节偏移，
+因此**任意版本**的 kext 都能提取。
+
+实测两条路径的产物**逐字节相同**（12/12）。
+
+完整的失传分析、kext 的各种获取途径、以及仍然存在的风险，
+见 [`docs/archive-and-recovery.md`](docs/archive-and-recovery.md)。
+
 ### 12 个文件里哪些是必须的
 
 实测（把文件移走、重新加载模块、对比出图与颜色）：
@@ -201,7 +224,8 @@ macOS 更新镜像中。
 ```
 kernel/facetimehd/     内核模块源码（out-of-tree，GPLv2）
 tools/
-  fetch-firmware.sh    从 Apple CDN 抓取并校验固件（不入库，需要时现取）
+  fetch-firmware.sh    获取并校验固件（3 条路径：CDN / 本地 kext / 本地 DMG）
+  extract-firmware.py  内容寻址提取器（按哈希认版本，不依赖偏移）
   audit-registers.py   用 Apple kext 审计驱动寄存器表
   trace-offsets.py     把寄存器访问定位到具体函数
 scripts/
@@ -211,6 +235,7 @@ scripts/
   selftest.sh          运行时自检（真的抓一帧并验证画面内容）
 docs/
   reverse-engineering.md   逆向笔记：Apple 驱动 ↔ Linux 驱动的对照
+  archive-and-recovery.md  存档与失传风险分析（含 CDN 失效的恢复流程）
   hardware.md              硬件识别与已知机型
 artifacts/             审计产物（Apple kext 反汇编、JSON 报告）
 firmware/              【不入库】固件缓存目录，由 fetch-firmware.sh 填充
