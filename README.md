@@ -9,6 +9,8 @@
 
 ## 现状
 
+**已在真机验证通过 —— 摄像头能出图。**
+
 | 项目 | 状态 |
 |---|---|
 | 硬件识别 | ✅ `02:00.0 Multimedia controller: Broadcom 720p FaceTime HD Camera [14e4:1570]` |
@@ -16,7 +18,31 @@
 | 内核 7.0.0-38 编译 | ✅ **零 error、零 warning** |
 | 固件提取 + sha256 校验 | ✅ 12/12 文件全部校验通过 |
 | 与 Apple 官方驱动的寄存器交叉审计 | ✅ 覆盖率 77.4%，无冲突 |
-| 运行时加载与出图 | ⏳ 需要 root 权限安装（见下） |
+| 驱动加载 + ISP 初始化 | ✅ DDR PHY 标定通过、固件加载成功、7 个 IPC 通道 |
+| 实时出图 | ✅ **1280×720 YUYV @ 29.97 fps** |
+| 开机自动加载 | ✅ PCI modalias → udev → modprobe 链路验证通过 |
+| debugfs 诊断接口 | ✅ 8 个节点可用 |
+
+本机实测（Ubuntu 26.04.1 LTS / kernel 7.0.0-38）：
+
+```
+$ v4l2-ctl -d /dev/video0 --stream-mmap=4 --stream-count=60 --stream-to=/dev/null
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< 29.97 fps
+```
+
+自检全绿：
+
+```
+$ sudo ./scripts/selftest.sh
+--- 1. 模块 ---        [OK]  模块已加载
+--- 2. 设备节点 ---    [OK]  /dev/video0 存在
+--- 3. 驱动信息 ---    1280/720  'YUYV'  30.000 fps
+--- 4. 采集 30 帧 ---   [OK]  55296000 字节 = 30 帧
+--- 5. 解码成 PNG ---   [OK]  画面有内容 (平均灰度 91, 动态范围 255)
+--- 6. 内核日志 ---     [OK]  无错误
+--- 7. debugfs ---      [OK]  8 个诊断节点
+结果: 失败 0 项
+```
 
 ---
 
@@ -26,19 +52,29 @@
 # 1. 只编译（不需要 root）
 ./scripts/build.sh
 
-# 2. 安装（需要 root：装固件 + DKMS 注册模块 + 加载）
+# 2. 安装（需要 root：装固件 + DKMS 注册模块 + 加载 + 开机自启）
 sudo ./scripts/install.sh
 
-# 3. 校验（不需要 root，随时可跑）
+# 3. 校验固件与寄存器表（不需要 root，随时可跑）
 ./scripts/verify.sh
+
+# 4. 运行时自检（需要 root，会真的抓一帧并检查画面内容）
+sudo ./scripts/selftest.sh
 ```
 
 装好后 `/dev/video0` 会出现，用任意 V4L2 应用打开即可：
 
 ```bash
 ffplay /dev/video0            # 预览
-ffmpeg -f v4l2 -i /dev/video0 -frames:v 1 out.png   # 抓一帧
+ffmpeg -f v4l2 -i /dev/video0 -frames:v 1 -y out.png   # 抓一帧
+v4l2-ctl -d /dev/video0 --stream-mmap=4 --stream-count=60 --stream-to=/dev/null
 ```
+
+> **注意**：用 `ffmpeg` 收尾时可能会看到
+> `Some buffers are still owned by the caller on close.` 和
+> `ioctl(VIDIOC_QBUF): Bad file descriptor`。
+> 这是 **libavdevice 的收尾逻辑**与本驱动的 buffer 状态机不匹配所致，
+> **不影响采集结果**（帧已全部正确写出）。用 `v4l2-ctl` 采集则完全无此提示。
 
 ---
 
@@ -53,8 +89,9 @@ tools/
   trace-offsets.py     把寄存器访问定位到具体函数
 scripts/
   build.sh             编译
-  install.sh           安装（固件 + DKMS + 加载）
+  install.sh           安装（固件 + DKMS + 加载 + 开机自启）
   verify.sh            校验固件与寄存器表
+  selftest.sh          运行时自检（真的抓一帧并验证画面内容）
 docs/
   reverse-engineering.md   逆向笔记：Apple 驱动 ↔ Linux 驱动的对照
   hardware.md              硬件识别与已知机型

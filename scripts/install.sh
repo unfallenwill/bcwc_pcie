@@ -32,23 +32,36 @@ install -m644 "${FWSRC}"/*_01XX.dat "$FWDIR/"
 ls -l "$FWDIR"
 
 # ------------------------------------------------------------ DKMS 模块 --
+PKG="$(grep -oP '^PACKAGE_NAME=\K.*' "${SRC}/dkms.conf" | tr -d '"')"
+VER="$(grep -oP '^PACKAGE_VERSION=\K.*' "${SRC}/dkms.conf" | tr -d '"')"
+DKMS_SRC="/usr/src/${PKG}-${VER}"
+
 # 若 DKMS 已登记过，先清掉，避免 "already installed" 冲突
-if dkms status | grep -q '^facetimehd'; then
+if dkms status | grep -q "^${PKG}"; then
 	echo "==> 移除旧的 DKMS 安装"
-	dkms remove -m facetimehd --all || true
+	dkms remove -m "$PKG" --all || true
 fi
 
-echo "==> 注册 DKMS"
-mkdir -p "/usr/src/facetimehd-${KVER}"
-cp -a "$SRC"/. "/usr/src/facetimehd-${KVER}/"
+echo "==> 准备 DKMS 源码目录 ${DKMS_SRC}"
+rm -rf "$DKMS_SRC"
+mkdir -p "$DKMS_SRC"
+cp -a "$SRC"/. "$DKMS_SRC/"
+# 清掉可能带过来的构建产物
+rm -f "$DKMS_SRC"/*.o "$DKMS_SRC"/*.ko "$DKMS_SRC"/*.mod "$DKMS_SRC"/*.mod.c
+rm -rf "$DKMS_SRC"/.tmp_versions
 
-echo "==> DKMS 构建"
-dkms build -m facetimehd -v "$(grep -oP 'PACKAGE_VERSION=\K.*' "${SRC}/dkms.conf" | tr -d '"')" -k "$KVER"
+echo "==> DKMS 构建 (${PKG} ${VER} / kernel ${KVER})"
+dkms build -m "$PKG" -v "$VER" -k "$KVER"
 
 echo "==> DKMS 安装"
-dkms install -m facetimehd -v "$(grep -oP 'PACKAGE_VERSION=\K.*' "${SRC}/dkms.conf" | tr -d '"')" -k "$KVER"
+dkms install -m "$PKG" -v "$VER" -k "$KVER"
 
 # ---------------------------------------------------------------- 加载 --
+echo "==> 配置开机自动加载"
+# PCI modalias 已经能让 udev 自动加载（modprobe --resolve-alias 验证过），
+# 这里再加一份 modules-load.d 兼底，避免设备枚举顺序导致的时序问题。
+echo "facetimehd" > /etc/modules-load.d/facetimehd.conf
+
 echo "==> 加载模块"
 modprobe -r facetimehd 2>/dev/null || true
 modprobe facetimehd || true
